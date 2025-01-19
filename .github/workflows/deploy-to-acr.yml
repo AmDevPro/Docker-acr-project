@@ -1,0 +1,35 @@
+name: Build and Push Docker Image to ACR
+
+on:
+  push:
+    branches:
+      - main  # Run the workflow when code is pushed to the main branch
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry (ACR)
+        run: |
+          az acr login --name ${{ secrets.ACR_LOGIN_SERVER }}
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/myapp:latest .
+
+      - name: Push Docker Image to ACR
+        run: |
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/myapp:latest
+
+      - name: Logout from Azure
+        run: |
+          az logout
